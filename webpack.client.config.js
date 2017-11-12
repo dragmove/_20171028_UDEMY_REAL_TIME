@@ -58,6 +58,11 @@ function createConfig(isDebug) {
         use: ['css-loader', 'sass-loader']
       })
     };
+
+  } else {
+    plugins.push(new webpack.HotModuleReplacementPlugin());
+
+    appEntry.splice(0, 0, 'webpack-hot-middleware/client');
   }
 
   return {
@@ -98,7 +103,7 @@ function createConfig(isDebug) {
         },
 
         {
-          test: '/\.(woff|woff2|ttf|eot|svg)/',
+          test: /\.(woff|woff2|ttf|eot|svg)$/,
           use: [{
             loader: 'url-loader'
           }]

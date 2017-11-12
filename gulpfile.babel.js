@@ -4,8 +4,8 @@ import chalk from 'chalk';
 import rimraf from 'rimraf';
 
 const createClientConfig = require('./webpack.client');
-
 const createServerConfig = require('./webpack.server');
+
 const $ = require('gulp-load-plugins')();
 
 /*

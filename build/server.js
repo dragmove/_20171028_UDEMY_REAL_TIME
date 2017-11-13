@@ -158,6 +158,11 @@ app.get('/', function (req, res) {
  */
 io.on('connection', function (socket) {
   console.log('Got connection from ' + socket.request.connection.remoteAddress);
+
+  var index = 0;
+  setInterval(function () {
+    socket.emit('test', 'On index ' + index++);
+  }, 1000);
 });
 
 /*
@@ -227,7 +232,7 @@ var path = __webpack_require__(10),
     ExtractTextPlugin = __webpack_require__(11),
     dirname = path.resolve('./');
 
-var vendorModules = ['jquery', 'lodash'];
+var vendorModules = ['jquery', 'lodash', 'socket.io-client', 'rxjs'];
 
 function createConfig(isDebug) {
   var devTool = isDebug ? 'eval-source-map' : 'source-map';

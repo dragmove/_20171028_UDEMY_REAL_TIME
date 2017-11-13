@@ -110,9 +110,9 @@ var io = (0, _socket2.default)(server);
  */
 if (process.env.USE_WEBPACK === 'true') {
   var webpackMiddleware = __webpack_require__(7),
-      webpackHotMiddleware = __webpack_require__(11),
+      webpackHotMiddleware = __webpack_require__(8),
       webpack = __webpack_require__(0),
-      clientConfig = __webpack_require__(8);
+      clientConfig = __webpack_require__(9);
 
   var compiler = webpack(clientConfig(true));
 
@@ -138,6 +138,7 @@ if (process.env.USE_WEBPACK === 'true') {
  * configure Express
  */
 app.set('view engine', 'pug');
+
 app.use(_express2.default.static('public'));
 
 var useExternalStyles = !isDevelopment;
@@ -210,14 +211,20 @@ module.exports = require("webpack-dev-middleware");
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack-hot-middleware");
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var path = __webpack_require__(9),
+var path = __webpack_require__(10),
     webpack = __webpack_require__(0),
-    ExtractTextPlugin = __webpack_require__(10),
+    ExtractTextPlugin = __webpack_require__(11),
     dirname = path.resolve('./');
 
 var vendorModules = ['jquery', 'lodash'];
@@ -318,22 +325,16 @@ function createConfig(isDebug) {
 module.exports = createConfig;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 10 */
-/***/ (function(module, exports) {
-
-module.exports = require("extract-text-webpack-plugin");
-
-/***/ }),
 /* 11 */
 /***/ (function(module, exports) {
 
-module.exports = require("webpack-hot-middleware");
+module.exports = require("extract-text-webpack-plugin");
 
 /***/ })
 /******/ ]);

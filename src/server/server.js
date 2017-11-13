@@ -47,6 +47,7 @@ if(process.env.USE_WEBPACK === 'true') {
  * configure Express
  */
 app.set('view engine', 'pug');
+
 app.use(express.static('public'));
 
 const useExternalStyles = !isDevelopment;

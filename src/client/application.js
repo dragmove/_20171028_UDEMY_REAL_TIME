@@ -8,6 +8,8 @@ services.server.on$('test')
     console.log(`Got ${item} from server!`);
   });
 
+services.server.status$.subscribe(status => console.log(status));
+
 
 // auth
 

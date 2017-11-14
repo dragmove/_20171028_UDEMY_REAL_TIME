@@ -2,13 +2,18 @@ import './application.scss';
 import * as services from './services';
 
 // playground
-services.server.on$('test')
-  .map(d => d + ' whoa')
-  .subscribe(item => {
-    console.log(`Got ${item} from server!`);
-  });
+services.server
+  .emitAction$('login', {username: 'foo', password: 'bar'}) // get ReplaySubject(1)
+  .subscribe(result => {
+    console.log('result :', result);
 
-services.server.status$.subscribe(status => console.log(status));
+    if (result.error) {
+      console.error(result.error);
+
+    } else {
+      console.log(`We're logged in.`);
+    }
+  });
 
 
 // auth

@@ -60,39 +60,49 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports) {
 
-module.exports = require("webpack");
+module.exports = require("rxjs");
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack");
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(2);
+__webpack_require__(3);
 
-var _express = __webpack_require__(3);
+var _express = __webpack_require__(4);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _http = __webpack_require__(4);
+var _http = __webpack_require__(5);
 
 var _http2 = _interopRequireDefault(_http);
 
-var _socket = __webpack_require__(5);
+var _socket = __webpack_require__(6);
 
 var _socket2 = _interopRequireDefault(_socket);
 
-var _chalk = __webpack_require__(6);
+var _chalk = __webpack_require__(7);
 
 var _chalk2 = _interopRequireDefault(_chalk);
+
+var _rxjs = __webpack_require__(0);
+
+var _observableSocket = __webpack_require__(8);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -109,10 +119,10 @@ var io = (0, _socket2.default)(server);
  * client webpack
  */
 if (process.env.USE_WEBPACK === 'true') {
-  var webpackMiddleware = __webpack_require__(7),
-      webpackHotMiddleware = __webpack_require__(8),
-      webpack = __webpack_require__(0),
-      clientConfig = __webpack_require__(9);
+  var webpackMiddleware = __webpack_require__(9),
+      webpackHotMiddleware = __webpack_require__(10),
+      webpack = __webpack_require__(1),
+      clientConfig = __webpack_require__(11);
 
   var compiler = webpack(clientConfig(true));
 
@@ -159,10 +169,11 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
   console.log('Got connection from ' + socket.request.connection.remoteAddress);
 
-  var index = 0;
-  setInterval(function () {
-    socket.emit('test', 'On index ' + index++);
-  }, 1000);
+  var client = new _observableSocket.ObservableSocket(socket);
+
+  client.onAction('login', function (creds) {
+    return _rxjs.Observable.of({ username: creds.username });
+  });
 });
 
 /*
@@ -179,57 +190,225 @@ function startServer() {
 startServer();
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports) {
 
 module.exports = require("source-map-support/register");
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports) {
 
 module.exports = require("http");
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 module.exports = require("socket.io");
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require("chalk");
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-module.exports = require("webpack-dev-middleware");
-
-/***/ }),
 /* 8 */
-/***/ (function(module, exports) {
-
-module.exports = require("webpack-hot-middleware");
-
-/***/ }),
-/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var path = __webpack_require__(10),
-    webpack = __webpack_require__(0),
-    ExtractTextPlugin = __webpack_require__(11),
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ObservableSocket = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _rxjs = __webpack_require__(0);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ObservableSocket = exports.ObservableSocket = function () {
+  _createClass(ObservableSocket, [{
+    key: 'isConnected',
+    get: function get() {
+      return this._state.isConnected;
+    }
+  }, {
+    key: 'isReconnecting',
+    get: function get() {
+      return this._state.isReconnecting;
+    }
+  }, {
+    key: 'isTotallyDead',
+    get: function get() {
+      return !this.isConnected && !this.isReconnecting;
+    }
+  }]);
+
+  function ObservableSocket(socket) {
+    var _this = this;
+
+    _classCallCheck(this, ObservableSocket);
+
+    this._socket = socket;
+
+    this._state = {};
+
+    this._actionCallbacks = {};
+
+    this._requests = {};
+
+    this._nextRequestId = 0;
+
+    this.status$ = _rxjs.Observable.merge(this.on$('connect').map(function () {
+      return { isConnected: true };
+    }), this.on$('disconnect').map(function () {
+      return { isConnected: false };
+    }), this.on$('reconnecting').map(function (attempt) {
+      return { isConnected: false, isReconnecting: true, attempt: attempt };
+    }), this.on$('reconnect_failed').map(function () {
+      return { isConnected: false, isReconnecting: false };
+    })).publishReplay(1).refCount();
+
+    this.status$.subscribe(function (state) {
+      return _this._state = state;
+    });
+  }
+
+  // basic wrappers
+
+
+  _createClass(ObservableSocket, [{
+    key: 'on$',
+    value: function on$(event) {
+      return _rxjs.Observable.fromEvent(this._socket, event);
+    }
+  }, {
+    key: 'on',
+    value: function on(event, callback) {
+      this._socket.on(event, callback);
+    }
+  }, {
+    key: 'off',
+    value: function off(event, callback) {
+      this._socket.off(event, callback);
+    }
+  }, {
+    key: 'emit',
+    value: function emit(event, arg) {
+      this._socket.emit(event, arg);
+    }
+
+    // emit (client side)
+
+  }, {
+    key: 'emitAction$',
+    value: function emitAction$(action, arg) {
+      var id = this._nextRequestId++;
+
+      console.log('client side. action, arg :', action, arg);
+
+      this._registerCallbacks(action);
+
+      var subject = this._requests[id] = new _rxjs.ReplaySubject(1);
+
+      this._socket.emit(action, arg, id);
+
+      return subject;
+    }
+  }, {
+    key: '_registerCallbacks',
+    value: function _registerCallbacks(action) {
+      var _this2 = this;
+
+      // login(username) -> emit('login') -> server -> emit('login', {data}) -> client
+
+      // client.emit('login', {args}, requestId);
+
+      if (this._actionCallbacks.hasOwnProperty(action)) return;
+
+      this._socket.on(action, function (arg, id) {
+        var request = _this2._popRequest(id);
+        if (!request) return;
+
+        request.next(arg);
+        request.complete();
+      });
+
+      this._socket.on(action + ':fail', function (arg, id) {
+        var request = _this2._popRequest(id);
+        if (!request) return;
+
+        request.error(arg);
+      });
+
+      this._actionCallbacks[action] = true;
+    }
+  }, {
+    key: '_popRequest',
+    value: function _popRequest(id) {
+      if (!this._requests.hasOwnProperty(id)) {
+        console.error('Event with id ' + id + ' was returned twice, or the server did not send back an id');
+        return;
+      }
+
+      var request = this._requests;
+
+      delete this._requests[id];
+
+      return request;
+    }
+
+    // on (server side)
+
+  }, {
+    key: 'onAction',
+    value: function onAction(action) {
+      this._socket.on(action, function () {
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+          args[_key] = arguments[_key];
+        }
+
+        console.log('server side. args :', args);
+      });
+    }
+  }]);
+
+  return ObservableSocket;
+}();
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack-dev-middleware");
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack-hot-middleware");
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var path = __webpack_require__(12),
+    webpack = __webpack_require__(1),
+    ExtractTextPlugin = __webpack_require__(13),
     dirname = path.resolve('./');
 
 var vendorModules = ['jquery', 'lodash', 'socket.io-client', 'rxjs'];
@@ -330,13 +509,13 @@ function createConfig(isDebug) {
 module.exports = createConfig;
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = require("extract-text-webpack-plugin");

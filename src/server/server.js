@@ -6,7 +6,7 @@ import socketIo from 'socket.io';
 import chalk from 'chalk';
 
 import {Observable} from 'rxjs';
-import {ObservableSocket} from 'shared/observable-socket';
+import {ObservableSocket, clientMessage} from 'shared/observable-socket';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -74,7 +74,11 @@ io.on('connection', socket => {
   const client = new ObservableSocket(socket);
 
   client.onAction('login', creds => {
-    return Observable.of({username: creds.username});
+    // throw clientMessage('user not logged in');
+    // return {user: creds.username};
+
+    return Observable.of(`user: ${creds.username}`).delay(3000);
+    // throw new Error('whoa');
   });
 });
 

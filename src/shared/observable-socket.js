@@ -130,7 +130,7 @@ export class ObservableSocket {
         }
 
         if(typeof(value.subscribe) !== 'function') {
-          console.log('value.subscribe :', value.subscribe);
+          console.log('value.subscribe from server side :', value.subscribe);
           
           this._socket.emit(action, value, requestId);
           return;
@@ -139,6 +139,8 @@ export class ObservableSocket {
         let hasValue = false;
         value.subscribe({
           next: (item) => {
+            console.log('next item :', item);
+
             if(hasValue) {
               throw new Error(`Action ${action} produced more than one value.`);
             }
@@ -155,6 +157,8 @@ export class ObservableSocket {
           },
 
           complete: () => {
+            console.log('complete from server side');
+
             if(!hasValue) {
               this._socket.emit(action, null, requestId);
             }

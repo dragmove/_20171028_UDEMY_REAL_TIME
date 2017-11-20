@@ -16,6 +16,7 @@ services.server
 
 
 // components
+require('./components/player/player');
 
 
 // bootstrap

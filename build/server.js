@@ -405,7 +405,7 @@ var ObservableSocket = exports.ObservableSocket = function () {
           }
 
           if (typeof value.subscribe !== 'function') {
-            console.log('value.subscribe :', value.subscribe);
+            console.log('value.subscribe from server side :', value.subscribe);
 
             _this3._socket.emit(action, value, requestId);
             return;
@@ -414,6 +414,8 @@ var ObservableSocket = exports.ObservableSocket = function () {
           var hasValue = false;
           value.subscribe({
             next: function next(item) {
+              console.log('next item :', item);
+
               if (hasValue) {
                 throw new Error('Action ' + action + ' produced more than one value.');
               }
@@ -430,6 +432,8 @@ var ObservableSocket = exports.ObservableSocket = function () {
             },
 
             complete: function complete() {
+              console.log('complete from server side');
+
               if (!hasValue) {
                 _this3._socket.emit(action, null, requestId);
               }

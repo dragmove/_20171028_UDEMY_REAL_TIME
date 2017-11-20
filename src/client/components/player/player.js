@@ -1,6 +1,8 @@
 import $ from 'jquery';
 import {ElementComponent} from '../../lib/component';
 
+import './player.scss';
+
 class PlayerComponent extends ElementComponent {
   constructor() {
     super();
@@ -21,7 +23,6 @@ try {
 
 } catch (e) {
   console.error(e);
-
   if (component) component.detach();
 
 } finally {

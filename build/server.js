@@ -760,6 +760,15 @@ var UsersModule = exports.UsersModule = function (_ModuleBase) {
 
       // client is an instance of ObservableSocket
 
+      // test code
+      var index = 0;
+      setInterval(function () {
+        var username = 'New user ' + index++;
+        var user = { name: username, color: _this2.getColorForUsername(username) };
+
+        client.emit('users:added', user);
+      }, 2000);
+
       client.onActions({
         'users:list': function usersList() {
           return _this2._userList;

@@ -69,6 +69,7 @@ export class ObservableSocket {
 
     const subject = this._requests[id] = new ReplaySubject(1);
 
+    // emit event to server side
     this._socket.emit(action, arg, id);
 
     return subject;
@@ -81,6 +82,7 @@ export class ObservableSocket {
 
     if (this._actionCallbacks.hasOwnProperty(action)) return;
 
+    // get event from server side
     this._socket.on(action, (arg, id) => {
       const request = this._popRequest(id);
       if (!request) return;
@@ -116,6 +118,8 @@ export class ObservableSocket {
 
   // on (server side)
   onAction(action, callback) {
+
+    // get event from client side
     this._socket.on(action, (arg, requestId) => {
       console.log('action :', action);
       console.log('arg :', arg);
@@ -173,6 +177,14 @@ export class ObservableSocket {
         console.error(error.stack || error);
       }
     });
+  }
+
+  onActions(actions) {
+    for (let action in actions) {
+      if(!actions.hasOwnProperty(action)) continue;
+
+      this.onAction(action, actions[action]);
+    }
   }
 
   _emitError(action, id, error) {

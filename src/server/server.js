@@ -8,6 +8,10 @@ import chalk from 'chalk';
 import {Observable} from 'rxjs';
 import {ObservableSocket, clientMessage} from 'shared/observable-socket';
 
+import {UsersModule} from './modules/users';
+import {PlaylistModule} from './modules/playlist';
+import {ChatModule} from './modules/chat';
+
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 /*
@@ -20,7 +24,7 @@ const io = socketIo(server);
 /*
  * client webpack
  */
-if(process.env.USE_WEBPACK === 'true') {
+if (process.env.USE_WEBPACK === 'true') {
   var webpackMiddleware = require('webpack-dev-middleware'),
     webpackHotMiddleware = require('webpack-hot-middleware'),
     webpack = require('webpack'),
@@ -62,8 +66,21 @@ app.get('/', (req, res) => {
 });
 
 /*
+ * services
+ */
+const videoServices = [];
+const playlistRepository = {};
+
+
+/*
  * modules
  */
+const users = new UsersModule(io);
+const chat = new ChatModule(io, users);
+const playlist = new PlaylistModule(io, users, playlistRepository, videoServices);
+
+const modules = [users, chat, playlist];
+
 
 /*
  * socket
@@ -73,13 +90,22 @@ io.on('connection', socket => {
 
   const client = new ObservableSocket(socket);
 
-  client.onAction('login', creds => {
-    // throw clientMessage('user not logged in');
-    // return {user: creds.username};
+  for (let mod of modules) {
+    mod.registerClient(client);
+  }
 
-    return Observable.of(`user: ${creds.username}`).delay(3000);
-    // throw new Error('whoa');
-  });
+  for (let mod of modules) {
+    mod.clientRegistered(client);
+  }
+
+  /*
+   client.onAction('login', creds => {
+   // throw clientMessage('user not logged in');
+   // return {user: creds.username};
+   // return Observable.of(`user: ${creds.username}`).delay(3000);
+   throw new Error('whoa');
+   });
+   */
 });
 
 /*
@@ -92,5 +118,16 @@ function startServer() {
     console.log(`Started http server on ${port}`);
   });
 }
+
+Observable.merge(...modules.map(m => m.init$()))
+  .subscribe({
+    complete() {
+      startServer()
+    },
+
+    error(e) {
+      console.error(`Could not init module: ${error.stack || error}`);
+    }
+  })
 
 startServer();

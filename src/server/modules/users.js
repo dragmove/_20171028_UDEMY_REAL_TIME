@@ -5,7 +5,7 @@ export class UsersModule extends ModuleBase {
   constructor(io) {
     super();
 
-    this._io = io
+    this._io = io;
 
     this._userList = [
       {name: 'Foo', color: this.getColorForUsername('Foo')},

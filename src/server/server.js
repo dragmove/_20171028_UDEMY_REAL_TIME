@@ -122,12 +122,12 @@ function startServer() {
 Observable.merge(...modules.map(m => m.init$()))
   .subscribe({
     complete() {
-      startServer()
+      startServer();
     },
 
-    error(e) {
-      console.error(`Could not init module: ${error.stack || error}`);
+    error(err) {
+      console.error(`Could not init module: ${err.stack || err}`);
     }
-  })
+  });
 
-startServer();
+// startServer();

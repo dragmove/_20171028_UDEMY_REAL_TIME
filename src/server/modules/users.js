@@ -5,7 +5,7 @@ export class UsersModule extends ModuleBase {
   constructor(io) {
     super();
 
-    this._io = io
+    this._io = io;
 
     this._userList = [
       {name: 'Foo', color: this.getColorForUsername('Foo')},
@@ -33,11 +33,13 @@ export class UsersModule extends ModuleBase {
     // test code
     let index = 0;
     setInterval(() => {
-      const username = `New user ${index++}`;
+      const username = `New user ${index}`;
       const user = {name: username, color: this.getColorForUsername(username)};
 
       client.emit('users:added', user);
-    }, 2000);
+
+      index++;
+    }, 5000);
 
     client.onActions({
       'users:list': () => {

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,44 +71,91 @@ module.exports = require("rxjs");
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
-
-module.exports = require("webpack");
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(3);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ModuleBase = undefined;
 
-var _express = __webpack_require__(4);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _rxjs = __webpack_require__(0);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*eslint no-unused-vars: "off"*/
+
+var ModuleBase = exports.ModuleBase = function () {
+  function ModuleBase() {
+    _classCallCheck(this, ModuleBase);
+  }
+
+  _createClass(ModuleBase, [{
+    key: 'init$',
+    value: function init$() {
+      return _rxjs.Observable.empty();
+    }
+  }, {
+    key: 'registerClient',
+    value: function registerClient(client) {
+      //
+    }
+  }, {
+    key: 'clientRegistered',
+    value: function clientRegistered(client) {
+      //
+    }
+  }]);
+
+  return ModuleBase;
+}();
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack");
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(4);
+
+var _express = __webpack_require__(5);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _http = __webpack_require__(5);
+var _http = __webpack_require__(6);
 
 var _http2 = _interopRequireDefault(_http);
 
-var _socket = __webpack_require__(6);
+var _socket = __webpack_require__(7);
 
 var _socket2 = _interopRequireDefault(_socket);
 
-var _chalk = __webpack_require__(7);
+var _chalk = __webpack_require__(8);
 
 var _chalk2 = _interopRequireDefault(_chalk);
 
 var _rxjs = __webpack_require__(0);
 
-var _observableSocket = __webpack_require__(8);
+__webpack_require__(9);
 
-var _users = __webpack_require__(14);
+var _observableSocket = __webpack_require__(10);
 
-var _playlist = __webpack_require__(16);
+var _users = __webpack_require__(11);
 
-var _chat = __webpack_require__(17);
+var _playlist = __webpack_require__(13);
+
+var _chat = __webpack_require__(14);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -127,10 +174,10 @@ var io = (0, _socket2.default)(server);
  * client webpack
  */
 if (process.env.USE_WEBPACK === 'true') {
-  var webpackMiddleware = __webpack_require__(9),
-      webpackHotMiddleware = __webpack_require__(10),
-      webpack = __webpack_require__(1),
-      clientConfig = __webpack_require__(11);
+  var webpackMiddleware = __webpack_require__(15),
+      webpackHotMiddleware = __webpack_require__(16),
+      webpack = __webpack_require__(2),
+      clientConfig = __webpack_require__(17);
 
   var compiler = webpack(clientConfig(true));
 
@@ -267,55 +314,65 @@ _rxjs.Observable.merge.apply(_rxjs.Observable, _toConsumableArray(modules.map(fu
   complete: function complete() {
     startServer();
   },
-  error: function (_error) {
-    function error(_x) {
-      return _error.apply(this, arguments);
-    }
-
-    error.toString = function () {
-      return _error.toString();
-    };
-
-    return error;
-  }(function (e) {
-    console.error('Could not init module: ' + (error.stack || error));
-  })
+  error: function error(err) {
+    console.error('Could not init module: ' + (err.stack || err));
+  }
 });
-
-startServer();
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-module.exports = require("source-map-support/register");
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports) {
 
-module.exports = require("express");
+module.exports = require("source-map-support/register");
 
 /***/ }),
 /* 5 */
 /***/ (function(module, exports) {
 
-module.exports = require("http");
+module.exports = require("express");
 
 /***/ }),
 /* 6 */
 /***/ (function(module, exports) {
 
-module.exports = require("socket.io");
+module.exports = require("http");
 
 /***/ }),
 /* 7 */
 /***/ (function(module, exports) {
 
-module.exports = require("chalk");
+module.exports = require("socket.io");
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports) {
+
+module.exports = require("chalk");
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _rxjs = __webpack_require__(0);
+
+_rxjs.Observable.prototype.safeSubscribe = function (next, error, complete) {
+  var subscription = this.subscribe(function (item) {
+    try {
+      next(item);
+    } catch (e) {
+      console.log(e.stack || e);
+      subscription.unsubscribe();
+    }
+  }, error, complete);
+
+  return subscription;
+};
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -563,27 +620,202 @@ var ObservableSocket = exports.ObservableSocket = function () {
 }();
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-module.exports = require("webpack-dev-middleware");
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports) {
-
-module.exports = require("webpack-hot-middleware");
-
-/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var path = __webpack_require__(12),
-    webpack = __webpack_require__(1),
-    ExtractTextPlugin = __webpack_require__(13),
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.UsersModule = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _lodash = __webpack_require__(12);
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _module = __webpack_require__(1);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var UsersModule = exports.UsersModule = function (_ModuleBase) {
+  _inherits(UsersModule, _ModuleBase);
+
+  function UsersModule(io) {
+    _classCallCheck(this, UsersModule);
+
+    var _this = _possibleConstructorReturn(this, (UsersModule.__proto__ || Object.getPrototypeOf(UsersModule)).call(this));
+
+    _this._io = io;
+
+    _this._userList = [{ name: 'Foo', color: _this.getColorForUsername('Foo') }, { name: 'Bar', color: _this.getColorForUsername('Bar') }, { name: 'Baz', color: _this.getColorForUsername('Baz') }];
+    return _this;
+  }
+
+  _createClass(UsersModule, [{
+    key: 'getColorForUsername',
+    value: function getColorForUsername(username) {
+      var hash = _lodash2.default.reduce(username, function (hash, ch) {
+        return ch.charCodeAt(0) + (hash << 6) + (hash << 16) - hash;
+      }, 0);
+
+      hash = Math.abs(hash);
+
+      // these values are arbitrary.
+      var hue = hash % 360,
+          saturation = hash % 25 + 70,
+          lightness = 100 - (hash % 15 + 35);
+
+      return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+    }
+  }, {
+    key: 'registerClient',
+    value: function registerClient(client) {
+      var _this2 = this;
+
+      // client is an instance of ObservableSocket
+
+      // test code
+      var index = 0;
+      setInterval(function () {
+        var username = 'New user ' + index;
+        var user = { name: username, color: _this2.getColorForUsername(username) };
+
+        client.emit('users:added', user);
+
+        index++;
+      }, 5000);
+
+      client.onActions({
+        'users:list': function usersList() {
+          return _this2._userList;
+        },
+
+        'auth:login': function authLogin() {
+          //
+        },
+
+        'auth:logout': function authLogout() {
+          //
+        }
+      });
+    }
+  }]);
+
+  return UsersModule;
+}(_module.ModuleBase);
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports) {
+
+module.exports = require("lodash");
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PlaylistModule = undefined;
+
+var _module = __webpack_require__(1);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var PlaylistModule = exports.PlaylistModule = function (_ModuleBase) {
+  _inherits(PlaylistModule, _ModuleBase);
+
+  function PlaylistModule(io, usersModule, playlistRepository, videoServices) {
+    _classCallCheck(this, PlaylistModule);
+
+    var _this = _possibleConstructorReturn(this, (PlaylistModule.__proto__ || Object.getPrototypeOf(PlaylistModule)).call(this));
+
+    _this._io = io;
+    _this._users = usersModule;
+    _this._repository = playlistRepository;
+    _this._services = videoServices;
+    return _this;
+  }
+
+  return PlaylistModule;
+}(_module.ModuleBase);
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ChatModule = undefined;
+
+var _module = __webpack_require__(1);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ChatModule = exports.ChatModule = function (_ModuleBase) {
+  _inherits(ChatModule, _ModuleBase);
+
+  function ChatModule(io, usersModule) {
+    _classCallCheck(this, ChatModule);
+
+    var _this = _possibleConstructorReturn(this, (ChatModule.__proto__ || Object.getPrototypeOf(ChatModule)).call(this));
+
+    _this._io = io;
+    _this._users = usersModule;
+    return _this;
+  }
+
+  return ChatModule;
+}(_module.ModuleBase);
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack-dev-middleware");
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack-hot-middleware");
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var path = __webpack_require__(18),
+    webpack = __webpack_require__(2),
+    ExtractTextPlugin = __webpack_require__(19),
     dirname = path.resolve('./');
 
 var vendorModules = ['jquery', 'lodash', 'socket.io-client', 'rxjs'];
@@ -684,234 +916,16 @@ function createConfig(isDebug) {
 module.exports = createConfig;
 
 /***/ }),
-/* 12 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 13 */
+/* 19 */
 /***/ (function(module, exports) {
 
 module.exports = require("extract-text-webpack-plugin");
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.UsersModule = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _lodash = __webpack_require__(18);
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _module = __webpack_require__(15);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var UsersModule = exports.UsersModule = function (_ModuleBase) {
-  _inherits(UsersModule, _ModuleBase);
-
-  function UsersModule(io) {
-    _classCallCheck(this, UsersModule);
-
-    var _this = _possibleConstructorReturn(this, (UsersModule.__proto__ || Object.getPrototypeOf(UsersModule)).call(this));
-
-    _this._io = io;
-
-    _this._userList = [{ name: 'Foo', color: _this.getColorForUsername('Foo') }, { name: 'Bar', color: _this.getColorForUsername('Bar') }, { name: 'Baz', color: _this.getColorForUsername('Baz') }];
-    return _this;
-  }
-
-  _createClass(UsersModule, [{
-    key: 'getColorForUsername',
-    value: function getColorForUsername(username) {
-      var hash = _lodash2.default.reduce(username, function (hash, ch) {
-        return ch.charCodeAt(0) + (hash << 6) + (hash << 16) - hash;
-      }, 0);
-
-      hash = Math.abs(hash);
-
-      // these values are arbitrary.
-      var hue = hash % 360,
-          saturation = hash % 25 + 70,
-          lightness = 100 - (hash % 15 + 35);
-
-      return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
-    }
-  }, {
-    key: 'registerClient',
-    value: function registerClient(client) {
-      var _this2 = this;
-
-      // client is an instance of ObservableSocket
-
-      // test code
-      var index = 0;
-      setInterval(function () {
-        var username = 'New user ' + index++;
-        var user = { name: username, color: _this2.getColorForUsername(username) };
-
-        client.emit('users:added', user);
-      }, 2000);
-
-      client.onActions({
-        'users:list': function usersList() {
-          return _this2._userList;
-        },
-
-        'auth:login': function authLogin() {
-          //
-        },
-
-        'auth:logout': function authLogout() {
-          //
-        }
-      });
-    }
-  }]);
-
-  return UsersModule;
-}(_module.ModuleBase);
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ModuleBase = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _rxjs = __webpack_require__(0);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*eslint no-unused-vars: "off"*/
-
-var ModuleBase = exports.ModuleBase = function () {
-  function ModuleBase() {
-    _classCallCheck(this, ModuleBase);
-  }
-
-  _createClass(ModuleBase, [{
-    key: 'init$',
-    value: function init$() {
-      return _rxjs.Observable.empty();
-    }
-  }, {
-    key: 'registerClient',
-    value: function registerClient(client) {
-      //
-    }
-  }, {
-    key: 'clientRegistered',
-    value: function clientRegistered(client) {
-      //
-    }
-  }]);
-
-  return ModuleBase;
-}();
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.PlaylistModule = undefined;
-
-var _module = __webpack_require__(15);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var PlaylistModule = exports.PlaylistModule = function (_ModuleBase) {
-  _inherits(PlaylistModule, _ModuleBase);
-
-  function PlaylistModule(io, usersModule, playlistRepository, videoServices) {
-    _classCallCheck(this, PlaylistModule);
-
-    var _this = _possibleConstructorReturn(this, (PlaylistModule.__proto__ || Object.getPrototypeOf(PlaylistModule)).call(this));
-
-    _this._io = io;
-    _this._users = usersModule;
-    _this._repository = playlistRepository;
-    _this._services = videoServices;
-    return _this;
-  }
-
-  return PlaylistModule;
-}(_module.ModuleBase);
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ChatModule = undefined;
-
-var _module = __webpack_require__(15);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var ChatModule = exports.ChatModule = function (_ModuleBase) {
-  _inherits(ChatModule, _ModuleBase);
-
-  function ChatModule(io, usersModule) {
-    _classCallCheck(this, ChatModule);
-
-    var _this = _possibleConstructorReturn(this, (ChatModule.__proto__ || Object.getPrototypeOf(ChatModule)).call(this));
-
-    _this._io = io;
-    _this._users = usersModule;
-    return _this;
-  }
-
-  return ChatModule;
-}(_module.ModuleBase);
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports) {
-
-module.exports = require("lodash");
 
 /***/ })
 /******/ ]);

@@ -4,8 +4,9 @@ import express from 'express';
 import http from 'http';
 import socketIo from 'socket.io';
 import chalk from 'chalk';
-
 import {Observable} from 'rxjs';
+
+import 'shared/operators';
 import {ObservableSocket, clientMessage} from 'shared/observable-socket';
 
 import {UsersModule} from './modules/users';
@@ -122,12 +123,10 @@ function startServer() {
 Observable.merge(...modules.map(m => m.init$()))
   .subscribe({
     complete() {
-      startServer()
+      startServer();
     },
 
-    error(e) {
-      console.error(`Could not init module: ${error.stack || error}`);
+    error(err) {
+      console.error(`Could not init module: ${err.stack || err}`);
     }
-  })
-
-startServer();
+  });

@@ -1,5 +1,8 @@
 import _ from 'lodash';
 import {ModuleBase} from '../lib/module';
+import {validateLogin} from 'shared/validation/users';
+
+const AuthContext = Symbol('AuthContext');
 
 export class UsersModule extends ModuleBase {
   constructor(io) {
@@ -7,11 +10,17 @@ export class UsersModule extends ModuleBase {
 
     this._io = io;
 
+    this._userList = [];
+
+    this._users = {};
+
+    /*
     this._userList = [
       {name: 'Foo', color: this.getColorForUsername('Foo')},
       {name: 'Bar', color: this.getColorForUsername('Bar')},
       {name: 'Baz', color: this.getColorForUsername('Baz')}
     ];
+    */
   }
 
   getColorForUsername(username) {
@@ -27,19 +36,38 @@ export class UsersModule extends ModuleBase {
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 
+  getUserForClient(client) {
+    const auth = client[AuthContext];
+    return (auth) ? auth : null;
+  }
+
+  loginClient$(client, username) {
+    username = username.trim();
+
+    const validator = validateLogin(username);
+
+    if (!validator.isValid) return validator.throw$(); // Observable.throw({clientMessage: validator.message});
+
+    if(this._users.hasOwnProperty(username)) {
+      return Observable.throw({clientMessage: '12345'});
+    }
+  }
+
   registerClient(client) {
     // client is an instance of ObservableSocket
 
-    // test code
-    let index = 0;
-    setInterval(() => {
-      const username = `New user ${index}`;
-      const user = {name: username, color: this.getColorForUsername(username)};
+    /*
+     // test code
+     let index = 0;
+     setInterval(() => {
+     const username = `New user ${index}`;
+     const user = {name: username, color: this.getColorForUsername(username)};
 
-      client.emit('users:added', user);
+     client.emit('users:added', user);
 
-      index++;
-    }, 5000);
+     index++;
+     }, 5000);
+     */
 
     client.onActions({
       'users:list': () => {

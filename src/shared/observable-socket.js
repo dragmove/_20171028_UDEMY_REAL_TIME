@@ -7,6 +7,8 @@ export function clientMessage(message) {
   return error;
 }
 
+export function fail(mee)
+
 export class ObservableSocket {
   get isConnected() {
     return this._state.isConnected;

@@ -130,3 +130,5 @@ Observable.merge(...modules.map(m => m.init$()))
       console.error(`Could not init module: ${err.stack || err}`);
     }
   });
+
+// startServer();

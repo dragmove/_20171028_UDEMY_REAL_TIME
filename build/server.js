@@ -319,6 +319,8 @@ _rxjs.Observable.merge.apply(_rxjs.Observable, _toConsumableArray(modules.map(fu
   }
 });
 
+// startServer();
+
 /***/ }),
 /* 4 */
 /***/ (function(module, exports) {

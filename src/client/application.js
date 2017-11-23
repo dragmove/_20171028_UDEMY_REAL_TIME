@@ -27,6 +27,11 @@ require('./components/playlist/playlist');
 // bootstrap
 services.socket.connect();
 
+services.usersStore.login$('whoa')
+  .subscribe((user) => {
+    console.log('user :', user);
+  });
+
 /*
 services.usersStore.state$.subscribe(state => {
   console.log('state :', state);

@@ -7,7 +7,14 @@ export function clientMessage(message) {
   return error;
 }
 
-export function fail(mee)
+export function fail(message) {
+  return Observable.throw({clientMessage: message});
+}
+
+let successObservable = Observable.empty();
+export function success() {
+  return successObservable;
+}
 
 export class ObservableSocket {
   get isConnected() {

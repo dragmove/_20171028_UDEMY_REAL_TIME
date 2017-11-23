@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -116,265 +116,6 @@ var ModuleBase = exports.ModuleBase = function () {
 
 /***/ }),
 /* 2 */
-/***/ (function(module, exports) {
-
-module.exports = require("webpack");
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-__webpack_require__(4);
-
-var _express = __webpack_require__(5);
-
-var _express2 = _interopRequireDefault(_express);
-
-var _http = __webpack_require__(6);
-
-var _http2 = _interopRequireDefault(_http);
-
-var _socket = __webpack_require__(7);
-
-var _socket2 = _interopRequireDefault(_socket);
-
-var _chalk = __webpack_require__(8);
-
-var _chalk2 = _interopRequireDefault(_chalk);
-
-var _rxjs = __webpack_require__(0);
-
-__webpack_require__(9);
-
-var _observableSocket = __webpack_require__(10);
-
-var _users = __webpack_require__(11);
-
-var _playlist = __webpack_require__(13);
-
-var _chat = __webpack_require__(14);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var isDevelopment = process.env.NODE_ENV !== 'production';
-
-/*
- * socket
- */
-var app = (0, _express2.default)();
-var server = new _http2.default.Server(app);
-var io = (0, _socket2.default)(server);
-
-/*
- * client webpack
- */
-if (process.env.USE_WEBPACK === 'true') {
-  var webpackMiddleware = __webpack_require__(15),
-      webpackHotMiddleware = __webpack_require__(16),
-      webpack = __webpack_require__(2),
-      clientConfig = __webpack_require__(17);
-
-  var compiler = webpack(clientConfig(true));
-
-  app.use(webpackMiddleware(compiler, {
-    publicPath: '/build/',
-    stats: {
-      colors: true,
-      chunks: false,
-      assets: false,
-      timings: false,
-      modules: false,
-      hash: false,
-      version: false
-    }
-  }));
-
-  app.use(webpackHotMiddleware(compiler));
-
-  console.log(_chalk2.default.bgRed('Using Webpack Dev MiddleWare. this is for dev only.'));
-}
-
-/*
- * configure Express
- */
-app.set('view engine', 'pug');
-
-app.use(_express2.default.static('public'));
-
-var useExternalStyles = !isDevelopment;
-
-app.get('/', function (req, res) {
-  res.render('index', {
-    useExternalStyles: useExternalStyles
-  });
-});
-
-/*
- * services
- */
-var videoServices = [];
-var playlistRepository = {};
-
-/*
- * modules
- */
-var users = new _users.UsersModule(io);
-var chat = new _chat.ChatModule(io, users);
-var playlist = new _playlist.PlaylistModule(io, users, playlistRepository, videoServices);
-
-var modules = [users, chat, playlist];
-
-/*
- * socket
- */
-io.on('connection', function (socket) {
-  console.log('Got connection from ' + socket.request.connection.remoteAddress);
-
-  var client = new _observableSocket.ObservableSocket(socket);
-
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = modules[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var mod = _step.value;
-
-      mod.registerClient(client);
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
-  }
-
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
-
-  try {
-    for (var _iterator2 = modules[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var _mod = _step2.value;
-
-      _mod.clientRegistered(client);
-    }
-
-    /*
-     client.onAction('login', creds => {
-     // throw clientMessage('user not logged in');
-     // return {user: creds.username};
-     // return Observable.of(`user: ${creds.username}`).delay(3000);
-     throw new Error('whoa');
-     });
-     */
-  } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion2 && _iterator2.return) {
-        _iterator2.return();
-      }
-    } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
-      }
-    }
-  }
-});
-
-/*
- * start up
- */
-var port = process.env.port || 3000;
-
-function startServer() {
-  server.listen(port, function () {
-    console.log('Started http server on ' + port);
-  });
-}
-
-_rxjs.Observable.merge.apply(_rxjs.Observable, _toConsumableArray(modules.map(function (m) {
-  return m.init$();
-}))).subscribe({
-  complete: function complete() {
-    startServer();
-  },
-  error: function error(err) {
-    console.error('Could not init module: ' + (err.stack || err));
-  }
-});
-
-// startServer();
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-module.exports = require("source-map-support/register");
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-module.exports = require("express");
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-module.exports = require("http");
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-module.exports = require("socket.io");
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-module.exports = require("chalk");
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _rxjs = __webpack_require__(0);
-
-_rxjs.Observable.prototype.safeSubscribe = function (next, error, complete) {
-  var subscription = this.subscribe(function (item) {
-    try {
-      next(item);
-    } catch (e) {
-      console.log(e.stack || e);
-      subscription.unsubscribe();
-    }
-  }, error, complete);
-
-  return subscription;
-};
-
-/***/ }),
-/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -388,6 +129,8 @@ exports.ObservableSocket = undefined;
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 exports.clientMessage = clientMessage;
+exports.fail = fail;
+exports.success = success;
 
 var _rxjs = __webpack_require__(0);
 
@@ -398,6 +141,15 @@ function clientMessage(message) {
   error.clientMessage = message;
 
   return error;
+}
+
+function fail(message) {
+  return _rxjs.Observable.throw({ clientMessage: message });
+}
+
+var successObservable = _rxjs.Observable.empty();
+function success() {
+  return successObservable;
 }
 
 var ObservableSocket = exports.ObservableSocket = function () {
@@ -622,6 +374,265 @@ var ObservableSocket = exports.ObservableSocket = function () {
 }();
 
 /***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack");
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(5);
+
+var _express = __webpack_require__(6);
+
+var _express2 = _interopRequireDefault(_express);
+
+var _http = __webpack_require__(7);
+
+var _http2 = _interopRequireDefault(_http);
+
+var _socket = __webpack_require__(8);
+
+var _socket2 = _interopRequireDefault(_socket);
+
+var _chalk = __webpack_require__(9);
+
+var _chalk2 = _interopRequireDefault(_chalk);
+
+var _rxjs = __webpack_require__(0);
+
+__webpack_require__(10);
+
+var _observableSocket = __webpack_require__(2);
+
+var _users = __webpack_require__(11);
+
+var _playlist = __webpack_require__(15);
+
+var _chat = __webpack_require__(16);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var isDevelopment = process.env.NODE_ENV !== 'production';
+
+/*
+ * socket
+ */
+var app = (0, _express2.default)();
+var server = new _http2.default.Server(app);
+var io = (0, _socket2.default)(server);
+
+/*
+ * client webpack
+ */
+if (process.env.USE_WEBPACK === 'true') {
+  var webpackMiddleware = __webpack_require__(17),
+      webpackHotMiddleware = __webpack_require__(18),
+      webpack = __webpack_require__(3),
+      clientConfig = __webpack_require__(19);
+
+  var compiler = webpack(clientConfig(true));
+
+  app.use(webpackMiddleware(compiler, {
+    publicPath: '/build/',
+    stats: {
+      colors: true,
+      chunks: false,
+      assets: false,
+      timings: false,
+      modules: false,
+      hash: false,
+      version: false
+    }
+  }));
+
+  app.use(webpackHotMiddleware(compiler));
+
+  console.log(_chalk2.default.bgRed('Using Webpack Dev MiddleWare. this is for dev only.'));
+}
+
+/*
+ * configure Express
+ */
+app.set('view engine', 'pug');
+
+app.use(_express2.default.static('public'));
+
+var useExternalStyles = !isDevelopment;
+
+app.get('/', function (req, res) {
+  res.render('index', {
+    useExternalStyles: useExternalStyles
+  });
+});
+
+/*
+ * services
+ */
+var videoServices = [];
+var playlistRepository = {};
+
+/*
+ * modules
+ */
+var users = new _users.UsersModule(io);
+var chat = new _chat.ChatModule(io, users);
+var playlist = new _playlist.PlaylistModule(io, users, playlistRepository, videoServices);
+
+var modules = [users, chat, playlist];
+
+/*
+ * socket
+ */
+io.on('connection', function (socket) {
+  console.log('Got connection from ' + socket.request.connection.remoteAddress);
+
+  var client = new _observableSocket.ObservableSocket(socket);
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = modules[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var mod = _step.value;
+
+      mod.registerClient(client);
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = modules[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var _mod = _step2.value;
+
+      _mod.clientRegistered(client);
+    }
+
+    /*
+     client.onAction('login', creds => {
+     // throw clientMessage('user not logged in');
+     // return {user: creds.username};
+     // return Observable.of(`user: ${creds.username}`).delay(3000);
+     throw new Error('whoa');
+     });
+     */
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+});
+
+/*
+ * start up
+ */
+var port = process.env.port || 3000;
+
+function startServer() {
+  server.listen(port, function () {
+    console.log('Started http server on ' + port);
+  });
+}
+
+_rxjs.Observable.merge.apply(_rxjs.Observable, _toConsumableArray(modules.map(function (m) {
+  return m.init$();
+}))).subscribe({
+  complete: function complete() {
+    startServer();
+  },
+  error: function error(err) {
+    console.error('Could not init module: ' + (err.stack || err));
+  }
+});
+
+// startServer();
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+module.exports = require("source-map-support/register");
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+module.exports = require("express");
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+module.exports = require("http");
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+module.exports = require("socket.io");
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+module.exports = require("chalk");
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _rxjs = __webpack_require__(0);
+
+_rxjs.Observable.prototype.safeSubscribe = function (next, error, complete) {
+  var subscription = this.subscribe(function (item) {
+    try {
+      next(item);
+    } catch (e) {
+      console.log(e.stack || e);
+      subscription.unsubscribe();
+    }
+  }, error, complete);
+
+  return subscription;
+};
+
+/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -639,7 +650,13 @@ var _lodash = __webpack_require__(12);
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _rxjs = __webpack_require__(0);
+
 var _module = __webpack_require__(1);
+
+var _users = __webpack_require__(13);
+
+var _observableSocket = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -648,6 +665,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var AuthContext = Symbol('AuthContext');
 
 var UsersModule = exports.UsersModule = function (_ModuleBase) {
   _inherits(UsersModule, _ModuleBase);
@@ -659,7 +678,17 @@ var UsersModule = exports.UsersModule = function (_ModuleBase) {
 
     _this._io = io;
 
-    _this._userList = [{ name: 'Foo', color: _this.getColorForUsername('Foo') }, { name: 'Bar', color: _this.getColorForUsername('Bar') }, { name: 'Baz', color: _this.getColorForUsername('Baz') }];
+    _this._userList = [];
+
+    _this._users = {};
+
+    /*
+     this._userList = [
+     {name: 'Foo', color: this.getColorForUsername('Foo')},
+     {name: 'Bar', color: this.getColorForUsername('Bar')},
+     {name: 'Baz', color: this.getColorForUsername('Baz')}
+     ];
+     */
     return _this;
   }
 
@@ -680,30 +709,69 @@ var UsersModule = exports.UsersModule = function (_ModuleBase) {
       return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
     }
   }, {
+    key: 'getUserForClient',
+    value: function getUserForClient(client) {
+      var auth = client[AuthContext];
+      return auth ? auth : null;
+    }
+  }, {
+    key: 'loginClient$',
+    value: function loginClient$(client, username) {
+      username = username.trim();
+
+      var validator = (0, _users.validateLogin)(username);
+
+      if (!validator.isValid) return validator.throw$(); // Observable.throw({clientMessage: validator.message});
+
+      if (this._users.hasOwnProperty(username)) {
+        // return Observable.throw({clientMessage: '12345'});
+        return (0, _observableSocket.fail)('Username ' + username + ' is already taken');
+      }
+
+      var auth = client[AuthContext] || (client[AuthContext] = {});
+      if (auth.isLoggedIn) {
+        return (0, _observableSocket.fail)('You are already logged in');
+      }
+
+      auth.name = username;
+      auth.color = this.getColorForUsername(username);
+      auth.isLoggedIn = true;
+
+      this._users[username] = client;
+      this._userList.push(auth);
+
+      this._io.emit('users:added', auth);
+      console.log('User ' + username);
+
+      return _rxjs.Observable.of(auth);
+    }
+  }, {
     key: 'registerClient',
     value: function registerClient(client) {
       var _this2 = this;
 
       // client is an instance of ObservableSocket
 
-      // test code
-      var index = 0;
-      setInterval(function () {
-        var username = 'New user ' + index;
-        var user = { name: username, color: _this2.getColorForUsername(username) };
-
-        client.emit('users:added', user);
-
-        index++;
-      }, 5000);
+      /*
+       // test code
+       let index = 0;
+       setInterval(() => {
+       const username = `New user ${index}`;
+       const user = {name: username, color: this.getColorForUsername(username)};
+         client.emit('users:added', user);
+         index++;
+       }, 5000);
+       */
 
       client.onActions({
         'users:list': function usersList() {
           return _this2._userList;
         },
 
-        'auth:login': function authLogin() {
-          //
+        'auth:login': function authLogin(_ref) {
+          var name = _ref.name;
+
+          return _this2.loginClient$(client, name);
         },
 
         'auth:logout': function authLogout() {
@@ -724,6 +792,104 @@ module.exports = require("lodash");
 
 /***/ }),
 /* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.USERNAME_REGEX = undefined;
+exports.validateLogin = validateLogin;
+
+var _validator = __webpack_require__(14);
+
+var USERNAME_REGEX = exports.USERNAME_REGEX = /^[\w\d_-]+$/;
+
+function validateLogin(username) {
+  var validator = new _validator.Validator();
+
+  if (username.length >= 20) {
+    validator.error('Username must be fewer than 20 characters');
+  }
+
+  if (!USERNAME_REGEX.test(username)) {
+    validator.error('username can only contain numbers, digits, underscore and dashes');
+  }
+
+  return validator;
+}
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Validator = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _rxjs = __webpack_require__(0);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Validator = exports.Validator = function () {
+  _createClass(Validator, [{
+    key: 'isValid',
+    get: function get() {
+      return !this._errors.length;
+    }
+  }, {
+    key: 'errors',
+    get: function get() {
+      return this._errors;
+    }
+  }, {
+    key: 'message',
+    get: function get() {
+      return this._errors.join(', ');
+    }
+  }]);
+
+  function Validator() {
+    _classCallCheck(this, Validator);
+
+    this._errors = [];
+  }
+
+  _createClass(Validator, [{
+    key: 'error',
+    value: function error(message) {
+      this._errors.push(message);
+    }
+  }, {
+    key: 'toObject',
+    value: function toObject() {
+      if (this.isValid) return {};
+
+      return {
+        errors: this._errors,
+        message: this.message
+      };
+    }
+  }, {
+    key: 'throw$',
+    value: function throw$() {
+      return _rxjs.Observable.throw({ clientMessage: this.message });
+    }
+  }]);
+
+  return Validator;
+}();
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -761,7 +927,7 @@ var PlaylistModule = exports.PlaylistModule = function (_ModuleBase) {
 }(_module.ModuleBase);
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -797,27 +963,27 @@ var ChatModule = exports.ChatModule = function (_ModuleBase) {
 }(_module.ModuleBase);
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = require("webpack-dev-middleware");
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports = require("webpack-hot-middleware");
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var path = __webpack_require__(18),
-    webpack = __webpack_require__(2),
-    ExtractTextPlugin = __webpack_require__(19),
+var path = __webpack_require__(20),
+    webpack = __webpack_require__(3),
+    ExtractTextPlugin = __webpack_require__(21),
     dirname = path.resolve('./');
 
 var vendorModules = ['jquery', 'lodash', 'socket.io-client', 'rxjs'];
@@ -918,13 +1084,13 @@ function createConfig(isDebug) {
 module.exports = createConfig;
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = require("extract-text-webpack-plugin");

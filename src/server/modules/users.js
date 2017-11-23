@@ -1,6 +1,9 @@
 import _ from 'lodash';
+import {Observable} from 'rxjs';
+
 import {ModuleBase} from '../lib/module';
 import {validateLogin} from 'shared/validation/users';
+import {fail} from 'shared/observable-socket';
 
 const AuthContext = Symbol('AuthContext');
 
@@ -15,12 +18,12 @@ export class UsersModule extends ModuleBase {
     this._users = {};
 
     /*
-    this._userList = [
-      {name: 'Foo', color: this.getColorForUsername('Foo')},
-      {name: 'Bar', color: this.getColorForUsername('Bar')},
-      {name: 'Baz', color: this.getColorForUsername('Baz')}
-    ];
-    */
+     this._userList = [
+     {name: 'Foo', color: this.getColorForUsername('Foo')},
+     {name: 'Bar', color: this.getColorForUsername('Bar')},
+     {name: 'Baz', color: this.getColorForUsername('Baz')}
+     ];
+     */
   }
 
   getColorForUsername(username) {
@@ -48,9 +51,27 @@ export class UsersModule extends ModuleBase {
 
     if (!validator.isValid) return validator.throw$(); // Observable.throw({clientMessage: validator.message});
 
-    if(this._users.hasOwnProperty(username)) {
-      return Observable.throw({clientMessage: '12345'});
+    if (this._users.hasOwnProperty(username)) {
+      // return Observable.throw({clientMessage: '12345'});
+      return fail(`Username ${username} is already taken`);
     }
+
+    const auth = client[AuthContext] || (client[AuthContext] = {});
+    if (auth.isLoggedIn) {
+      return fail('You are already logged in');
+    }
+
+    auth.name = username;
+    auth.color = this.getColorForUsername(username);
+    auth.isLoggedIn = true;
+
+    this._users[username] = client;
+    this._userList.push(auth);
+
+    this._io.emit('users:added', auth);
+    console.log(`User ${username}`);
+
+    return Observable.of(auth);
   }
 
   registerClient(client) {
@@ -74,8 +95,8 @@ export class UsersModule extends ModuleBase {
         return this._userList;
       },
 
-      'auth:login': () => {
-        //
+      'auth:login': ({name}) => {
+        return this.loginClient$(client, name);
       },
 
       'auth:logout': () => {

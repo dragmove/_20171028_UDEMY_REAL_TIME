@@ -43,11 +43,25 @@ export class UsersStore {
     // Bootstrap
     this._server.on('connect', () => {
       this._server.emit('users:list');
+
+      if(!this.isLoggedIn) {
+        console.log('this.isLoggedIn is false. return');
+
+        return;
+      }
+
+      this.login$(this._currentUser.name).subscribe(
+        user => console.log(`Logged in again as ${user.name}`),
+        error => alert(`Could not log back in ${error.message || 'Unknown error'}`)
+      );
     });
   }
 
   login$(name) {
     const validator = validateLogin(name);
+
+    console.log('validator.message :', validator.message);
+    console.log('validator.hasErrors :', validator.hasErrors);
 
     if (validator.hasErrors) {
       return Observable.throw({message: validator.message});

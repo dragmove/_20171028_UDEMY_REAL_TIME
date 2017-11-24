@@ -13,6 +13,8 @@ export class ChatFormComponent extends ElementComponent {
   }
 
   _onAttach() {
+    this._$error = $(`<div class="chat-error" />`).appendTo(this.$element);
+
     this._$input = $(`<input type="text" class="chat-input" />`).appendTo(this.$element);
 
     this._users.currentUser$.compSubscribe(this, user => {
@@ -20,7 +22,7 @@ export class ChatFormComponent extends ElementComponent {
     });
 
     Observable.fromEvent(this._$input, 'keydown')
-      //get value
+    //get value
       .filter(e => e.keyCode === 13) // enter key
       .do(e => e.preventDefault())
       .map(e => e.target.value.trim())
@@ -34,9 +36,31 @@ export class ChatFormComponent extends ElementComponent {
 
       // display message
       .compSubscribe(this, response => {
+        if (response && response.error) {
+          this._$error.show().text(response.error.message);
 
+        } else {
+          this._$error.hide();
+        }
+      });
+  }
 
+  _sendMessage$() {
+    return Observable.empty();
+  }
 
+  _login$(username) {
+    console.log('_login$ username :', username);
+
+    this._$input.attr('disabled', 'disabled');
+
+    return this._users.login$(username)
+      // .catch(error => Observable.of({error: error}))
+      .catchWrap()
+      .do(() => this._$input.val(''))
+      .finally(() => {
+        this._$input.attr('disabled', null);
+        this._$input.focus();
       });
   }
 }

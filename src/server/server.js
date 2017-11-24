@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import {Observable} from 'rxjs';
 
 import 'shared/operators';
-import {ObservableSocket, clientMessage} from 'shared/observable-socket';
+import {ObservableSocket} from 'shared/observable-socket';
 
 import {UsersModule} from './modules/users';
 import {PlaylistModule} from './modules/playlist';

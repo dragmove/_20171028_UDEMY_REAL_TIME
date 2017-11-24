@@ -52,15 +52,22 @@ export class UsersModule extends ModuleBase {
 
     const validator = validateLogin(username);
 
-    if (!validator.isValid) return validator.throw$(); // Observable.throw({clientMessage: validator.message});
+    if (!validator.isValid) {
+
+      return validator.throw$();
+    } // Observable.throw({clientMessage: validator.message});
+
 
     if (this._users.hasOwnProperty(username)) {
       // return Observable.throw({clientMessage: '12345'});
+
+      // TODO - confirm print this
       return fail(`Username ${username} is already taken`);
     }
 
     const auth = client[AuthContext] || (client[AuthContext] = {});
     if (auth.isLoggedIn) {
+      // TODO - confirm print this
       return fail('You are already logged in');
     }
 

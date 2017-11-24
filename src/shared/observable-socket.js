@@ -197,6 +197,8 @@ export class ObservableSocket {
   }
 
   _emitError(action, id, error) {
+    console.log('_emitError action, id, error :', action, id, error);
+
     const message = (error & error.clientMessage) || 'Fatal Error';
     this._socket.emit(`${action}:fail`, {message}, id);
   }

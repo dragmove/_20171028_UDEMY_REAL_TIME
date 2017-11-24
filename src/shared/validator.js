@@ -13,6 +13,10 @@ export class Validator {
     return this._errors.join(', ');
   }
 
+  get hasErrors() {
+    return this._errors.length > 0;
+  }
+
   constructor() {
     this._errors = [];
   }
@@ -31,6 +35,7 @@ export class Validator {
   }
 
   throw$() {
+    console.log('validator.js throw$: this.message :', this.message);
     return Observable.throw({clientMessage: this.message});
   }
 }

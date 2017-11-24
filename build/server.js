@@ -365,6 +365,8 @@ var ObservableSocket = exports.ObservableSocket = function () {
   }, {
     key: '_emitError',
     value: function _emitError(action, id, error) {
+      console.log('_emitError action, id, error :', action, id, error);
+
       var message = error & error.clientMessage || 'Fatal Error';
       this._socket.emit(action + ':fail', { message: message }, id);
     }
@@ -632,6 +634,12 @@ _rxjs.Observable.prototype.safeSubscribe = function (next, error, complete) {
   return subscription;
 };
 
+_rxjs.Observable.prototype.catchWrap = function () {
+  return this.catch(function (error) {
+    return _rxjs.Observable.of({ error: error });
+  });
+};
+
 /***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -640,7 +648,7 @@ _rxjs.Observable.prototype.safeSubscribe = function (next, error, complete) {
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 exports.UsersModule = undefined;
 
@@ -669,143 +677,150 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var AuthContext = Symbol('AuthContext');
 
 var UsersModule = exports.UsersModule = function (_ModuleBase) {
-    _inherits(UsersModule, _ModuleBase);
+  _inherits(UsersModule, _ModuleBase);
 
-    function UsersModule(io) {
-        _classCallCheck(this, UsersModule);
+  function UsersModule(io) {
+    _classCallCheck(this, UsersModule);
 
-        var _this = _possibleConstructorReturn(this, (UsersModule.__proto__ || Object.getPrototypeOf(UsersModule)).call(this));
+    var _this = _possibleConstructorReturn(this, (UsersModule.__proto__ || Object.getPrototypeOf(UsersModule)).call(this));
 
-        _this._io = io;
+    _this._io = io;
 
-        _this._userList = [];
+    _this._userList = [];
 
-        _this._users = {};
+    _this._users = {};
 
-        /*
-         this._userList = [
-         {name: 'Foo', color: this.getColorForUsername('Foo')},
-         {name: 'Bar', color: this.getColorForUsername('Bar')},
-         {name: 'Baz', color: this.getColorForUsername('Baz')}
-         ];
-         */
-        return _this;
+    /*
+     this._userList = [
+     {name: 'Foo', color: this.getColorForUsername('Foo')},
+     {name: 'Bar', color: this.getColorForUsername('Bar')},
+     {name: 'Baz', color: this.getColorForUsername('Baz')}
+     ];
+     */
+    return _this;
+  }
+
+  _createClass(UsersModule, [{
+    key: 'getColorForUsername',
+    value: function getColorForUsername(username) {
+      var hash = _lodash2.default.reduce(username, function (hash, ch) {
+        return ch.charCodeAt(0) + (hash << 6) + (hash << 16) - hash;
+      }, 0);
+
+      hash = Math.abs(hash);
+
+      // these values are arbitrary.
+      var hue = hash % 360,
+          saturation = hash % 25 + 70,
+          lightness = 100 - (hash % 15 + 35);
+
+      return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
     }
+  }, {
+    key: 'getUserForClient',
+    value: function getUserForClient(client) {
+      var auth = client[AuthContext];
 
-    _createClass(UsersModule, [{
-        key: 'getColorForUsername',
-        value: function getColorForUsername(username) {
-            var hash = _lodash2.default.reduce(username, function (hash, ch) {
-                return ch.charCodeAt(0) + (hash << 6) + (hash << 16) - hash;
-            }, 0);
+      if (!auth) return null;
 
-            hash = Math.abs(hash);
+      return auth.isLoggedIn ? auth : null;
+    }
+  }, {
+    key: 'loginClient$',
+    value: function loginClient$(client, username) {
+      username = username.trim();
 
-            // these values are arbitrary.
-            var hue = hash % 360,
-                saturation = hash % 25 + 70,
-                lightness = 100 - (hash % 15 + 35);
+      var validator = (0, _users.validateLogin)(username);
 
-            return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+      if (!validator.isValid) {
+
+        return validator.throw$();
+      } // Observable.throw({clientMessage: validator.message});
+
+
+      if (this._users.hasOwnProperty(username)) {
+        // return Observable.throw({clientMessage: '12345'});
+
+        // TODO - confirm print this
+        return (0, _observableSocket.fail)('Username ' + username + ' is already taken');
+      }
+
+      var auth = client[AuthContext] || (client[AuthContext] = {});
+      if (auth.isLoggedIn) {
+        // TODO - confirm print this
+        return (0, _observableSocket.fail)('You are already logged in');
+      }
+
+      auth.name = username;
+      auth.color = this.getColorForUsername(username);
+      auth.isLoggedIn = true;
+
+      this._users[username] = client;
+      this._userList.push(auth);
+
+      this._io.emit('users:added', auth);
+      console.log('User ' + username);
+
+      return _rxjs.Observable.of(auth);
+    }
+  }, {
+    key: 'logoutClient',
+    value: function logoutClient(client) {
+      var auth = this.getUserForClient(client);
+
+      if (!auth) return;
+
+      var index = this._userList.indexOf(auth);
+      this._userList.splice(index, 1);
+
+      delete this._users[auth.name];
+      delete client[AuthContext];
+
+      this._io.emit('users:removed', auth);
+
+      console.log('User ' + auth.name + ' logged out');
+    }
+  }, {
+    key: 'registerClient',
+    value: function registerClient(client) {
+      var _this2 = this;
+
+      // client is an instance of ObservableSocket
+
+      /*
+       // test code
+       let index = 0;
+       setInterval(() => {
+       const username = `New user ${index}`;
+       const user = {name: username, color: this.getColorForUsername(username)};
+        client.emit('users:added', user);
+        index++;
+       }, 5000);
+       */
+
+      client.onActions({
+        'users:list': function usersList() {
+          return _this2._userList;
+        },
+
+        'auth:login': function authLogin(_ref) {
+          var name = _ref.name;
+
+          return _this2.loginClient$(client, name);
+        },
+
+        'auth:logout': function authLogout() {
+          _this2.logoutClient(client);
         }
-    }, {
-        key: 'getUserForClient',
-        value: function getUserForClient(client) {
-            var auth = client[AuthContext];
+      });
 
-            if (!auth) return null;
+      client.on('disconnect', function () {
+        _this2.logoutClient(client);
+      });
+    }
+  }]);
 
-            return auth.isLoggedIn ? auth : null;
-        }
-    }, {
-        key: 'loginClient$',
-        value: function loginClient$(client, username) {
-            username = username.trim();
-
-            var validator = (0, _users.validateLogin)(username);
-
-            if (!validator.isValid) return validator.throw$(); // Observable.throw({clientMessage: validator.message});
-
-            if (this._users.hasOwnProperty(username)) {
-                // return Observable.throw({clientMessage: '12345'});
-                return (0, _observableSocket.fail)('Username ' + username + ' is already taken');
-            }
-
-            var auth = client[AuthContext] || (client[AuthContext] = {});
-            if (auth.isLoggedIn) {
-                return (0, _observableSocket.fail)('You are already logged in');
-            }
-
-            auth.name = username;
-            auth.color = this.getColorForUsername(username);
-            auth.isLoggedIn = true;
-
-            this._users[username] = client;
-            this._userList.push(auth);
-
-            this._io.emit('users:added', auth);
-            console.log('User ' + username);
-
-            return _rxjs.Observable.of(auth);
-        }
-    }, {
-        key: 'logoutClient',
-        value: function logoutClient(client) {
-            var auth = this.getUserForClient(client);
-
-            if (!auth) return;
-
-            var index = this._userList.indexOf(auth);
-            this._userList.splice(index, 1);
-
-            delete this._users[auth.name];
-            delete client[AuthContext];
-
-            this._io.emit('users:removed', auth);
-
-            console.log('User ' + auth.name + ' logged out');
-        }
-    }, {
-        key: 'registerClient',
-        value: function registerClient(client) {
-            var _this2 = this;
-
-            // client is an instance of ObservableSocket
-
-            /*
-             // test code
-             let index = 0;
-             setInterval(() => {
-             const username = `New user ${index}`;
-             const user = {name: username, color: this.getColorForUsername(username)};
-               client.emit('users:added', user);
-               index++;
-             }, 5000);
-             */
-
-            client.onActions({
-                'users:list': function usersList() {
-                    return _this2._userList;
-                },
-
-                'auth:login': function authLogin(_ref) {
-                    var name = _ref.name;
-
-                    return _this2.loginClient$(client, name);
-                },
-
-                'auth:logout': function authLogout() {
-                    _this2.logoutClient(client);
-                }
-            });
-
-            client.on('disconnect', function () {
-                _this2.logoutClient(client);
-            });
-        }
-    }]);
-
-    return UsersModule;
+  return UsersModule;
 }(_module.ModuleBase);
 
 /***/ }),
@@ -879,6 +894,11 @@ var Validator = exports.Validator = function () {
     get: function get() {
       return this._errors.join(', ');
     }
+  }, {
+    key: 'hasErrors',
+    get: function get() {
+      return this._errors.length > 0;
+    }
   }]);
 
   function Validator() {
@@ -905,6 +925,7 @@ var Validator = exports.Validator = function () {
   }, {
     key: 'throw$',
     value: function throw$() {
+      console.log('validator.js throw$: this.message :', this.message);
       return _rxjs.Observable.throw({ clientMessage: this.message });
     }
   }]);

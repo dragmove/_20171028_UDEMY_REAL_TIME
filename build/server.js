@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,51 +71,6 @@ module.exports = require("rxjs");
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ModuleBase = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _rxjs = __webpack_require__(0);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*eslint no-unused-vars: "off"*/
-
-var ModuleBase = exports.ModuleBase = function () {
-  function ModuleBase() {
-    _classCallCheck(this, ModuleBase);
-  }
-
-  _createClass(ModuleBase, [{
-    key: 'init$',
-    value: function init$() {
-      return _rxjs.Observable.empty();
-    }
-  }, {
-    key: 'registerClient',
-    value: function registerClient(client) {
-      //
-    }
-  }, {
-    key: 'clientRegistered',
-    value: function clientRegistered(client) {
-      //
-    }
-  }]);
-
-  return ModuleBase;
-}();
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -376,10 +331,55 @@ var ObservableSocket = exports.ObservableSocket = function () {
 }();
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ModuleBase = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _rxjs = __webpack_require__(0);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*eslint no-unused-vars: "off"*/
+
+var ModuleBase = exports.ModuleBase = function () {
+  function ModuleBase() {
+    _classCallCheck(this, ModuleBase);
+  }
+
+  _createClass(ModuleBase, [{
+    key: 'init$',
+    value: function init$() {
+      return _rxjs.Observable.empty();
+    }
+  }, {
+    key: 'registerClient',
+    value: function registerClient(client) {
+      //
+    }
+  }, {
+    key: 'clientRegistered',
+    value: function clientRegistered(client) {
+      //
+    }
+  }]);
+
+  return ModuleBase;
+}();
+
+/***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
-module.exports = require("webpack");
+module.exports = require("lodash");
 
 /***/ }),
 /* 4 */
@@ -388,31 +388,110 @@ module.exports = require("webpack");
 "use strict";
 
 
-__webpack_require__(5);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Validator = undefined;
 
-var _express = __webpack_require__(6);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _rxjs = __webpack_require__(0);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Validator = exports.Validator = function () {
+  _createClass(Validator, [{
+    key: 'isValid',
+    get: function get() {
+      return !this._errors.length;
+    }
+  }, {
+    key: 'errors',
+    get: function get() {
+      return this._errors;
+    }
+  }, {
+    key: 'message',
+    get: function get() {
+      return this._errors.join(', ');
+    }
+  }, {
+    key: 'hasErrors',
+    get: function get() {
+      return this._errors.length > 0;
+    }
+  }]);
+
+  function Validator() {
+    _classCallCheck(this, Validator);
+
+    this._errors = [];
+  }
+
+  _createClass(Validator, [{
+    key: 'error',
+    value: function error(message) {
+      this._errors.push(message);
+    }
+  }, {
+    key: 'toObject',
+    value: function toObject() {
+      if (this.isValid) return {};
+
+      return {
+        errors: this._errors,
+        message: this.message
+      };
+    }
+  }, {
+    key: 'throw$',
+    value: function throw$() {
+      console.log('validator.js throw$: this.message :', this.message);
+      return _rxjs.Observable.throw({ clientMessage: this.message });
+    }
+  }]);
+
+  return Validator;
+}();
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack");
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(7);
+
+var _express = __webpack_require__(8);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _http = __webpack_require__(7);
+var _http = __webpack_require__(9);
 
 var _http2 = _interopRequireDefault(_http);
 
-var _socket = __webpack_require__(8);
+var _socket = __webpack_require__(10);
 
 var _socket2 = _interopRequireDefault(_socket);
 
-var _chalk = __webpack_require__(9);
+var _chalk = __webpack_require__(11);
 
 var _chalk2 = _interopRequireDefault(_chalk);
 
 var _rxjs = __webpack_require__(0);
 
-__webpack_require__(10);
+__webpack_require__(12);
 
-var _observableSocket = __webpack_require__(2);
+var _observableSocket = __webpack_require__(1);
 
-var _users = __webpack_require__(11);
+var _users = __webpack_require__(13);
 
 var _playlist = __webpack_require__(15);
 
@@ -435,10 +514,10 @@ var io = (0, _socket2.default)(server);
  * client webpack
  */
 if (process.env.USE_WEBPACK === 'true') {
-  var webpackMiddleware = __webpack_require__(17),
-      webpackHotMiddleware = __webpack_require__(18),
-      webpack = __webpack_require__(3),
-      clientConfig = __webpack_require__(19);
+  var webpackMiddleware = __webpack_require__(18),
+      webpackHotMiddleware = __webpack_require__(19),
+      webpack = __webpack_require__(5),
+      clientConfig = __webpack_require__(20);
 
   var compiler = webpack(clientConfig(true));
 
@@ -583,37 +662,37 @@ _rxjs.Observable.merge.apply(_rxjs.Observable, _toConsumableArray(modules.map(fu
 // startServer();
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require("source-map-support/register");
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 module.exports = require("http");
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = require("socket.io");
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = require("chalk");
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -641,7 +720,7 @@ _rxjs.Observable.prototype.catchWrap = function () {
 };
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -654,17 +733,17 @@ exports.UsersModule = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _lodash = __webpack_require__(12);
+var _lodash = __webpack_require__(3);
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
 var _rxjs = __webpack_require__(0);
 
-var _module = __webpack_require__(1);
+var _module = __webpack_require__(2);
 
-var _users = __webpack_require__(13);
+var _users = __webpack_require__(14);
 
-var _observableSocket = __webpack_require__(2);
+var _observableSocket = __webpack_require__(1);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -824,13 +903,7 @@ var UsersModule = exports.UsersModule = function (_ModuleBase) {
 }(_module.ModuleBase);
 
 /***/ }),
-/* 12 */
-/***/ (function(module, exports) {
-
-module.exports = require("lodash");
-
-/***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -842,7 +915,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.USERNAME_REGEX = undefined;
 exports.validateLogin = validateLogin;
 
-var _validator = __webpack_require__(14);
+var _validator = __webpack_require__(4);
 
 var USERNAME_REGEX = exports.USERNAME_REGEX = /^[\w\d_-]+$/;
 
@@ -861,79 +934,6 @@ function validateLogin(username) {
 }
 
 /***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Validator = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _rxjs = __webpack_require__(0);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Validator = exports.Validator = function () {
-  _createClass(Validator, [{
-    key: 'isValid',
-    get: function get() {
-      return !this._errors.length;
-    }
-  }, {
-    key: 'errors',
-    get: function get() {
-      return this._errors;
-    }
-  }, {
-    key: 'message',
-    get: function get() {
-      return this._errors.join(', ');
-    }
-  }, {
-    key: 'hasErrors',
-    get: function get() {
-      return this._errors.length > 0;
-    }
-  }]);
-
-  function Validator() {
-    _classCallCheck(this, Validator);
-
-    this._errors = [];
-  }
-
-  _createClass(Validator, [{
-    key: 'error',
-    value: function error(message) {
-      this._errors.push(message);
-    }
-  }, {
-    key: 'toObject',
-    value: function toObject() {
-      if (this.isValid) return {};
-
-      return {
-        errors: this._errors,
-        message: this.message
-      };
-    }
-  }, {
-    key: 'throw$',
-    value: function throw$() {
-      console.log('validator.js throw$: this.message :', this.message);
-      return _rxjs.Observable.throw({ clientMessage: this.message });
-    }
-  }]);
-
-  return Validator;
-}();
-
-/***/ }),
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -945,7 +945,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PlaylistModule = undefined;
 
-var _module = __webpack_require__(1);
+var _module = __webpack_require__(2);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -983,13 +983,22 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ChatModule = undefined;
 
-var _module = __webpack_require__(1);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _module = __webpack_require__(2);
+
+var _chat = __webpack_require__(17);
+
+var _observableSocket = __webpack_require__(1);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var MAX_HISTORY = 100;
+var BATCH_SIZE = 10;
 
 var ChatModule = exports.ChatModule = function (_ModuleBase) {
   _inherits(ChatModule, _ModuleBase);
@@ -1001,34 +1010,130 @@ var ChatModule = exports.ChatModule = function (_ModuleBase) {
 
     _this._io = io;
     _this._users = usersModule;
+
+    _this._chatLog = [];
     return _this;
   }
+
+  _createClass(ChatModule, [{
+    key: 'sendMessage',
+    value: function sendMessage(user, message, type) {
+      message = message.trim();
+
+      var validator = (0, _chat.validateSendMessage)(user, message, type);
+      if (!validator.isValid) {
+        return validator.throw$();
+      }
+
+      var newMessage = {
+        user: { name: user.name, color: user.color },
+        message: message,
+        time: new Date().getTime(),
+        type: type
+      };
+
+      this._chatLog.push(newMessage);
+
+      if (this._chatLog.length >= MAX_HISTORY) {
+        this._chatLog.splice(0, BATCH_SIZE);
+      }
+
+      this._io.emit('chat:added', newMessage);
+    }
+  }, {
+    key: 'registerClient',
+    value: function registerClient(client) {
+      var _this2 = this;
+
+      client.onActions({
+
+        'chat:list': function chatList() {
+          return _this2._chatLog;
+        },
+
+        'chat:add': function chatAdd(_ref) {
+          var message = _ref.message,
+              type = _ref.type;
+
+          type = type || 'normal';
+
+          var user = _this2._users.getUserForClient(client);
+          if (!user) {
+            return (0, _observableSocket.fail)('You must be logged in');
+          }
+
+          _this2.sendMessage(user, message, type);
+        }
+      });
+    }
+  }]);
 
   return ChatModule;
 }(_module.ModuleBase);
 
 /***/ }),
 /* 17 */
-/***/ (function(module, exports) {
-
-module.exports = require("webpack-dev-middleware");
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports) {
-
-module.exports = require("webpack-hot-middleware");
-
-/***/ }),
-/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var path = __webpack_require__(20),
-    webpack = __webpack_require__(3),
-    ExtractTextPlugin = __webpack_require__(21),
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MESSAGE_TYPES = undefined;
+exports.validateSendMessage = validateSendMessage;
+
+var _lodash = __webpack_require__(3);
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _validator = __webpack_require__(4);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var MESSAGE_TYPES = exports.MESSAGE_TYPES = ['normal'];
+
+function validateSendMessage(user, message, type) {
+  var validator = new _validator.Validator();
+
+  if (message.length > 50) {
+    validator.error('Message must be smaller than 50 characters');
+  }
+
+  if (message.trim().length === 0) {
+    validator.error('Message cannot be empty');
+  }
+
+  if (!_lodash2.default.includes(MESSAGE_TYPES, message)) {
+    validator.error('Invalid message type ' + type);
+  }
+
+  return validator;
+}
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack-dev-middleware");
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+module.exports = require("webpack-hot-middleware");
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var path = __webpack_require__(21),
+    webpack = __webpack_require__(5),
+    ExtractTextPlugin = __webpack_require__(22),
     dirname = path.resolve('./');
 
 var vendorModules = ['jquery', 'lodash', 'socket.io-client', 'rxjs'];
@@ -1129,13 +1234,13 @@ function createConfig(isDebug) {
 module.exports = createConfig;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports) {
 
 module.exports = require("extract-text-webpack-plugin");
